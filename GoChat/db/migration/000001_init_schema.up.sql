@@ -1,0 +1,37 @@
+CREATE TABLE "users" (
+  "id" bigint PRIMARY KEY,
+  "name" varchar NOT NULL,
+  "username" varchar NOT NULL,
+  "email" varchar UNIQUE NOT NULL,
+  "password" varchar NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "rooms" (
+  "id" bigint PRIMARY KEY,
+  "name" varchar NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "room_members" (
+  "room_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  "joined_at" timestamptz NOT NULL DEFAULT (now()),
+  PRIMARY KEY ("room_id", "user_id")
+);
+
+CREATE TABLE "messages" (
+  "id" bigint PRIMARY KEY,
+  "room_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  "content" text NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+ALTER TABLE "room_members" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "room_members" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "messages" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "messages" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
