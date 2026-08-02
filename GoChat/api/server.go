@@ -2,6 +2,8 @@ package api
 
 import (
 	"GoChat/config"
+	db "GoChat/db/sqlc"
+	"GoChat/servers/hub"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,21 +11,23 @@ import (
 type Server struct {
 	config config.Config
 	router *gin.Engine
+	store  db.Store
+	hub    *hub.Hub
 }
 
-func NewServer(config config.Config) (*Server, error) {
+func NewServer(config config.Config, store db.Store) (*Server, error) {
 	server := &Server{
 		config: config,
+		store:  store,
+		hub:    hub.NewHub(),
 	}
 
-	if err := server.setupServer(config); err != nil {
-		return nil, err
-	}
+	server.setupServer()
 
 	return server, nil
 }
 
-func (server *Server) setupServer(config config.Config) error {
+func (server *Server) setupServer() {
 	router := gin.Default()
 
 	router.GET("/health", func(ctx *gin.Context) {
@@ -32,7 +36,15 @@ func (server *Server) setupServer(config config.Config) error {
 		})
 	})
 
-	server.router = router
+	router.GET("/ws", server.handleWebSocket)
 
-	return nil
+	server.router = router
+}
+
+func (server *Server) Start(address string) error {
+	return server.router.Run(address)
+}
+
+func errorResponse(err error) gin.H {
+	return gin.H{"error": err.Error()}
 }
