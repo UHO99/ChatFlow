@@ -9,10 +9,10 @@ services:
     ports:
       - "5432:5432"
 
-  nginx:
-    image: nginx:latest
-    container_name: test_nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: test_nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
