@@ -15,6 +15,7 @@ type Querier interface {
 	GetListRoom(ctx context.Context) ([]Room, error)
 	GetRoomByID(ctx context.Context, id int64) (Room, error)
 	GetRoomMemberByUsername(ctx context.Context, arg GetRoomMemberByUsernameParams) (RoomMember, error)
+	JoinRoomByUsername(ctx context.Context, arg JoinRoomByUsernameParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

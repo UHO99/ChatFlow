@@ -2,11 +2,14 @@ package api
 
 import (
 	db "GoChat/db/sqlc"
+	"GoChat/middleware"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -42,7 +45,54 @@ func (s *Server) handleCreateRoom(ctx *gin.Context) {
 		return
 	}
 
+	authPayload, ok := middleware.GetAuthPayload(ctx)
+	if !ok {
+		s.errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	if _, err := s.store.JoinRoomByUsername(ctx, db.JoinRoomByUsernameParams{
+		RoomID:   room.ID,
+		Username: authPayload.Username(),
+	}); err != nil {
+		s.errorResponse(ctx, http.StatusInternalServerError, "cannot add room creator as member")
+		return
+	}
+
 	ctx.JSON(http.StatusCreated, roomResponse{Name: room.Name})
+}
+
+func (s *Server) handleJoinRoom(ctx *gin.Context) {
+	roomID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+	if err != nil {
+		s.errorResponse(ctx, http.StatusBadRequest, "invalid room id")
+		return
+	}
+
+	if _, err := s.store.GetRoomByID(ctx, roomID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			s.errorResponse(ctx, http.StatusNotFound, "room not found")
+			return
+		}
+		s.errorResponse(ctx, http.StatusInternalServerError, "failed to get room")
+		return
+	}
+
+	authPayload, ok := middleware.GetAuthPayload(ctx)
+	if !ok {
+		s.errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	if _, err := s.store.JoinRoomByUsername(ctx, db.JoinRoomByUsernameParams{
+		RoomID:   roomID,
+		Username: authPayload.Username(),
+	}); err != nil {
+		s.errorResponse(ctx, http.StatusInternalServerError, "cannot join room")
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "joined room"})
 }
 
 func (s *Server) handleListRooms(ctx *gin.Context) {

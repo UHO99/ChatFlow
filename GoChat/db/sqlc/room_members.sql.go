@@ -45,3 +45,24 @@ func (q *Queries) GetRoomMemberByUsername(ctx context.Context, arg GetRoomMember
 	err := row.Scan(&i.RoomID, &i.UserID, &i.JoinedAt)
 	return i, err
 }
+
+const joinRoomByUsername = `-- name: JoinRoomByUsername :execrows
+INSERT INTO room_members (room_id, user_id)
+SELECT  $1, id
+FROM    users
+WHERE   username = $2
+ON CONFLICT (room_id, user_id) DO NOTHING
+`
+
+type JoinRoomByUsernameParams struct {
+	RoomID   int64  `json:"room_id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) JoinRoomByUsername(ctx context.Context, arg JoinRoomByUsernameParams) (int64, error) {
+	result, err := q.db.Exec(ctx, joinRoomByUsername, arg.RoomID, arg.Username)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}

@@ -50,6 +50,7 @@ func (server *Server) setupServer() {
 
 	authRoutes.POST("/rooms", server.handleCreateRoom)
 	authRoutes.GET("/rooms", server.handleListRooms)
+	authRoutes.POST("/rooms/:id/join", server.handleJoinRoom)
 	authRoutes.GET("/ws", server.handleWebSocket)
 
 	server.router = router

@@ -2,14 +2,18 @@ package com.test.bench.springauth.user.entity;
 
 import com.test.bench.springauth.user.dto.UserDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 
 @Getter
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Users {
 
     @Id
