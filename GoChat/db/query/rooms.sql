@@ -3,6 +3,12 @@ SELECT  *
 FROM    rooms
 WHERE   id = $1;
 
--- name: CreateRoom :exec
+-- name: GetListRoom :many
+SELECT  *
+FROM    rooms
+ORDER BY id;
+
+-- name: CreateRoom :one
 INSERT INTO rooms (name, description)
-VALUES ($1, $2);
+VALUES ($1, $2)
+RETURNING *;

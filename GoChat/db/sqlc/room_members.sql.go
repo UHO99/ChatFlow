@@ -23,3 +23,25 @@ func (q *Queries) CreateRoomAddMember(ctx context.Context, arg CreateRoomAddMemb
 	_, err := q.db.Exec(ctx, createRoomAddMember, arg.RoomID, arg.UserID)
 	return err
 }
+
+const getRoomMemberByUsername = `-- name: GetRoomMemberByUsername :one
+SELECT  room_members.room_id,
+        room_members.user_id,
+        room_members.joined_at
+FROM    room_members
+JOIN    users ON users.id = room_members.user_id
+WHERE   room_members.room_id = $1
+AND     users.username = $2
+`
+
+type GetRoomMemberByUsernameParams struct {
+	RoomID   int64  `json:"room_id"`
+	Username string `json:"username"`
+}
+
+func (q *Queries) GetRoomMemberByUsername(ctx context.Context, arg GetRoomMemberByUsernameParams) (RoomMember, error) {
+	row := q.db.QueryRow(ctx, getRoomMemberByUsername, arg.RoomID, arg.Username)
+	var i RoomMember
+	err := row.Scan(&i.RoomID, &i.UserID, &i.JoinedAt)
+	return i, err
+}

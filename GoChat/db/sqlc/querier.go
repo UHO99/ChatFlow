@@ -10,9 +10,11 @@ import (
 
 type Querier interface {
 	CreateMessage(ctx context.Context, arg CreateMessageParams) error
-	CreateRoom(ctx context.Context, arg CreateRoomParams) error
+	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	CreateRoomAddMember(ctx context.Context, arg CreateRoomAddMemberParams) error
+	GetListRoom(ctx context.Context) ([]Room, error)
 	GetRoomByID(ctx context.Context, id int64) (Room, error)
+	GetRoomMemberByUsername(ctx context.Context, arg GetRoomMemberByUsernameParams) (RoomMember, error)
 }
 
 var _ Querier = (*Queries)(nil)

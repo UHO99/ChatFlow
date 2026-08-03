@@ -11,9 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createRoom = `-- name: CreateRoom :exec
+const createRoom = `-- name: CreateRoom :one
 INSERT INTO rooms (name, description)
 VALUES ($1, $2)
+RETURNING id, name, description, created_at
 `
 
 type CreateRoomParams struct {
@@ -21,9 +22,47 @@ type CreateRoomParams struct {
 	Description pgtype.Text `json:"description"`
 }
 
-func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) error {
-	_, err := q.db.Exec(ctx, createRoom, arg.Name, arg.Description)
-	return err
+func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
+	row := q.db.QueryRow(ctx, createRoom, arg.Name, arg.Description)
+	var i Room
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getListRoom = `-- name: GetListRoom :many
+SELECT  id, name, description, created_at
+FROM    rooms
+ORDER BY id
+`
+
+func (q *Queries) GetListRoom(ctx context.Context) ([]Room, error) {
+	rows, err := q.db.Query(ctx, getListRoom)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Room
+	for rows.Next() {
+		var i Room
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getRoomByID = `-- name: GetRoomByID :one

@@ -17,13 +17,13 @@ func NewRoom(id int64, name string) *Room {
 	}
 }
 
-func (r *Room) AddClient(c *Client) {
+func (r *Room) addClient(c *Client) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.clients[c] = struct{}{}
 }
 
-func (r *Room) RemoveClient(c *Client) {
+func (r *Room) removeClient(c *Client) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -33,7 +33,7 @@ func (r *Room) RemoveClient(c *Client) {
 	}
 }
 
-func (r *Room) Broadcast(msg []byte) {
+func (r *Room) broadcast(msg []byte) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -45,7 +45,7 @@ func (r *Room) Broadcast(msg []byte) {
 	}
 }
 
-func (r *Room) IsEmpty() bool {
+func (r *Room) isEmpty() bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return len(r.clients) == 0

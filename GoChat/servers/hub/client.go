@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/coder/websocket"
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -22,35 +23,35 @@ const (
 type Client struct {
 	conn     *websocket.Conn
 	room     *Room
+	userID   int64
 	nickname string
 	send     chan []byte
-	userID   int64
 	store    db.Store
 }
 
-func NewClient(conn *websocket.Conn, room *Room, nickname string, userID int64, store db.Store) *Client {
+func NewClient(conn *websocket.Conn, room *Room, userID int64, nickname string, store db.Store) *Client {
 	return &Client{
 		conn:     conn,
 		room:     room,
+		userID:   userID,
 		nickname: nickname,
 		send:     make(chan []byte, sendBufferSize),
 		store:    store,
-		userID:   userID,
 	}
 }
 
-func (c *Client) Run(ctx context.Context) {
-	c.room.AddClient(c)
-	c.room.Broadcast(c.event(messages.TypeJoin, ""))
+func (c *Client) Run(ctx *gin.Context) {
+	c.room.addClient(c)
+	c.room.broadcast(c.event(messages.TypeJoin, ""))
 
 	done := make(chan struct{})
 	go c.writePump(ctx, done)
 	c.readPump(ctx)
 
-	c.room.RemoveClient(c)
+	c.room.removeClient(c)
 	<-done
 
-	c.room.Broadcast(c.event(messages.TypeLeave, ""))
+	c.room.broadcast(c.event(messages.TypeLeave, ""))
 }
 
 func (c *Client) readPump(ctx context.Context) {
@@ -84,7 +85,7 @@ func (c *Client) readPump(ctx context.Context) {
 			continue
 		}
 
-		c.room.Broadcast(c.event(messages.TypeMessage, in.Content))
+		c.room.broadcast(c.event(messages.TypeMessage, in.Content))
 	}
 }
 

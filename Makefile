@@ -1,2 +1,2 @@
-include Gochat/scripts/database.mk
-include Gochat/scripts/server.mk
+include GoChat/scripts/database.mk
+include GoChat/scripts/server.mk

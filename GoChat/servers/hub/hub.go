@@ -16,7 +16,7 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) GetRoom(ctx context.Context, roomID int64, name string) (*Room, error) {
+func (h *Hub) GetOrCreateRoom(roomID int64, name string) (*Room, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -34,7 +34,7 @@ func (h *Hub) RemoveRoom(ctx context.Context, roomID int64) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	if room, ok := h.rooms[roomID]; ok && room.IsEmpty() {
+	if room, ok := h.rooms[roomID]; ok && room.isEmpty() {
 		delete(h.rooms, roomID)
 	}
 }
