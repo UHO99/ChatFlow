@@ -49,7 +49,7 @@ func (server *Server) setupServer() {
 	authRoutes := router.Group("/").Use(middleware.AuthMiddleware(server.tokenMaker))
 
 	authRoutes.POST("/rooms", server.handleCreateRoom)
-	authRoutes.GET("/rooms")
+	authRoutes.GET("/rooms", server.handleListRooms)
 	authRoutes.GET("/ws", server.handleWebSocket)
 
 	server.router = router

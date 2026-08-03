@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 var (
@@ -15,48 +14,22 @@ var (
 )
 
 type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	IssuedAt  time.Time `json:"issued_at"`
-	ExpiredAt time.Time `json:"expired_at"`
+	jwt.RegisteredClaims
 }
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	tokenID, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
-
+	now := time.Now()
 	payload := &Payload{
-		ID:        tokenID,
-		Username:  username,
-		IssuedAt:  time.Now(),
-		ExpiredAt: time.Now().Add(duration),
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   username,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(duration)),
+		},
 	}
 
 	return payload, nil
 }
 
-func (payload *Payload) GetExpirationTime() (*jwt.NumericDate, error) {
-	return jwt.NewNumericDate(payload.ExpiredAt), nil
-}
-
-func (payload *Payload) GetIssuedAt() (*jwt.NumericDate, error) {
-	return jwt.NewNumericDate(payload.IssuedAt), nil
-}
-
-func (payload *Payload) GetNotBefore() (*jwt.NumericDate, error) {
-	return jwt.NewNumericDate(payload.IssuedAt), nil
-}
-
-func (payload *Payload) GetIssuer() (string, error) {
-	return "", nil
-}
-
-func (payload *Payload) GetSubject() (string, error) {
-	return payload.Username, nil
-}
-
-func (payload *Payload) GetAudience() (jwt.ClaimStrings, error) {
-	return nil, nil
+func (payload *Payload) Username() string {
+	return payload.Subject
 }

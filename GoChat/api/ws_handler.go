@@ -45,7 +45,7 @@ func (s *Server) handleWebSocket(ctx *gin.Context) {
 
 	member, err := s.store.GetRoomMemberByUsername(ctx, db.GetRoomMemberByUsernameParams{
 		RoomID:   room.ID,
-		Username: authPayload.Username,
+		Username: authPayload.Username(),
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -64,7 +64,7 @@ func (s *Server) handleWebSocket(ctx *gin.Context) {
 
 	hubRoom, _ := s.hub.GetOrCreateRoom(room.ID, room.Name)
 
-	client := hub.NewClient(conn, hubRoom, member.UserID, authPayload.Username, s.store)
+	client := hub.NewClient(conn, hubRoom, member.UserID, authPayload.Username(), s.store)
 
 	client.Run(ctx)
 }
