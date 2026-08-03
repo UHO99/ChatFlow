@@ -15,6 +15,7 @@ import (
 )
 
 type roomResponse struct {
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -59,7 +60,7 @@ func (s *Server) handleCreateRoom(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, roomResponse{Name: room.Name})
+	ctx.JSON(http.StatusCreated, roomResponse{ID: room.ID, Name: room.Name})
 }
 
 func (s *Server) handleJoinRoom(ctx *gin.Context) {
@@ -104,7 +105,7 @@ func (s *Server) handleListRooms(ctx *gin.Context) {
 
 	res := make([]roomResponse, 0, len(rooms))
 	for _, room := range rooms {
-		res = append(res, roomResponse{Name: room.Name})
+		res = append(res, roomResponse{ID: room.ID, Name: room.Name})
 	}
 
 	ctx.JSON(http.StatusOK, res)

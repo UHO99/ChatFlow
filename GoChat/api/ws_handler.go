@@ -56,7 +56,9 @@ func (s *Server) handleWebSocket(ctx *gin.Context) {
 		return
 	}
 
-	conn, err := websocket.Accept(ctx.Writer, ctx.Request, nil)
+	conn, err := websocket.Accept(ctx.Writer, ctx.Request, &websocket.AcceptOptions{
+		OriginPatterns: []string{"*"},
+	})
 	if err != nil {
 		return
 	}
