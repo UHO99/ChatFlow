@@ -26,3 +26,18 @@
 | 인프라 | Docker, Docker Compose, Nginx (Reverse Proxy) |
 
 ## 5. 테스트 방법
+
+### 1. 빌드
+- 프로젝트 루트에서 아래 명령어로 Postgres, SpringAuth, GoChat, Nginx 컨테이너를 빌드 및 실행합니다.
+  ```bash
+  docker compose up -d --build
+  ```
+- Postgres 컨테이너가 정상적으로 뜬 뒤, GoChat에서 사용하는 테이블 마이그레이션을 적용합니다.
+  ```bash
+  make migrateup
+  ```
+
+### 2. 프론트 테스트
+- `frontend/index.html` 파일을 브라우저로 직접 열어 테스트 클라이언트를 실행합니다.
+- 상단 `API Base URL`에 Nginx가 떠 있는 주소(`http://localhost`)를 입력합니다.
+- 회원가입 → 로그인 → 채팅방 생성/입장 → 메시지 송수신(WebSocket) 순서로 기능을 테스트합니다.
